@@ -8,15 +8,18 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -93,4 +96,36 @@ public class XuntaService {
                 }
             }
         }
+
+        // Procesamos la tabla de resultados: formulario + resultados.
+        Elements tables = serviceResponse.select("table");
+        if (tables.size() > 1) {
+            Elements rows = tables.get(1).select("tr");
+
+            // Eliminamos la última columna de la tabla (uris relativas).
+            for (int i = 1; i < rows.size(); i++) {
+                Elements values = rows.get(i).select("td");
+                String destinyCenter = values.get(0).text();
+                String jobCode = values.get(1).text();
+                String denomination = values.get(2).text();
+                String provision = values.get(3).text();
+                String group = values.get(4).text();
+                String level = values.get(5).text();
+
+                commissions.add(new CommissionResult(destinyCenter, jobCode, denomination, provision, group, level));
+            }
+        }
+
+        return commissions;
     }
+
+    public String createCommissionEmailContent(CommissionCriteria criteria, Collection<CommissionResult> commissions) {
+        // Template context
+        final Context ctx = new Context();
+        ctx.setVariable("criteria", criteria);
+        ctx.setVariable("results", commissions);
+
+        // Generation of the email body.
+        return templateEngine.process("commissions.html", ctx);
+    }
+}
