@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +57,24 @@ public class XuntaService {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    private static String toString(Object filter) {
+        return Objects.toString(filter, "");
+    }
+
+    public String createCommissionEmailContent(CommissionCriteria criteria, Collection<CommissionResult> commissions) {
+        // Template context
+        final Context ctx = new Context();
+        ctx.setVariable("criteria", criteria);
+        ctx.setVariable("results", commissions);
+
+        // Generation of the email body.
+        return templateEngine.process("commissions.html", ctx);
+    }
+
+    private static String formatDate(LocalDate date) {
+        return date != null ? date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
+
     public List<CommissionResult> getCommissions(CommissionCriteria criteria)
             throws IOException {
 
@@ -73,7 +92,7 @@ public class XuntaService {
                 .userAgent("Mozilla/5.0")
                 .timeout(10 * 1000)
                 .cookies(response.cookies())
-                .data("aberto", toString(criteria.getFinalUsers()))
+                .data("aberto", toString(criteria.getUsers()))
                 .data("conselleria", toString(criteria.getCounselling()))
                 .data("desde", toString(formatDate(criteria.getStartDate())))
                 .data("ata", toString(formatDate(criteria.getEndDate())))
@@ -119,19 +138,5 @@ public class XuntaService {
         }
 
         return commissions;
-    }
-
-    public String createCommissionEmailContent(CommissionCriteria criteria, Collection<CommissionResult> commissions) {
-        // Template context
-        final Context ctx = new Context();
-        ctx.setVariable("criteria", criteria);
-        ctx.setVariable("results", commissions);
-
-        // Generation of the email body.
-        return templateEngine.process("commissions.html", ctx);
-    }
-
-    private static String formatDate(LocalDate date) {
-        return date != null ? date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
     }
 }

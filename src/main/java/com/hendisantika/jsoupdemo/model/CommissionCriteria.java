@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class CommissionCriteria {
     @Pattern(regexp = "$|F|L", message = "invalid value ('F' oficials, 'L' work staff)")
-    private String privateUsers;
+    private String Users;
 
     private String counselling;
 
