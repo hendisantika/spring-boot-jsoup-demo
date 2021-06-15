@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -85,4 +86,7 @@ public class GlobalExceptionHandler {
         return error(exception.getMessage());
     }
 
+    private Map error(Object message) {
+        return Collections.singletonMap("error", message);
+    }
 }
