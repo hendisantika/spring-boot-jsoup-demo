@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -44,6 +46,17 @@ public class GlobalExceptionHandler {
         return error(exception.getBindingResult().getFieldErrors()
                 .stream()
                 .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList()));
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map handle(ConstraintViolationException exception) {
+        LOG.error(exception.getMessage(), exception);
+        return error(exception.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
                 .collect(Collectors.toList()));
     }
 }
