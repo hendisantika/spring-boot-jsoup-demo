@@ -76,4 +76,13 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.toList()));
     }
+
+    @ExceptionHandler
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map handle(Exception exception) {
+        LOG.error(exception.getMessage(), exception);
+        return error(exception.getMessage());
+    }
+
 }
